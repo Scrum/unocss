@@ -26,12 +26,12 @@ export interface AutocompleteTemplateTheme {
 
 export interface ParsedAutocompleteTemplate {
   parts: AutocompleteTemplatePart[]
-  suggest(input: string, matchType?: AutoCompleteMatchType): string[] | undefined
+  suggest: (input: string, matchType?: AutoCompleteMatchType) => string[] | undefined
 }
 
 export interface UnocssAutocomplete {
   suggest: (input: string, allowsEmptyInput?: boolean) => Promise<string[]>
-  suggestInFile: (content: string, cursor: number) => Promise<SuggestResult>
+  suggestInFile: (content: string, cursor: number) => Promise<SuggestResult | undefined>
   templates: (string | AutoCompleteFunction)[]
   cache: LRUCache<string, string[]>
   reset: () => void

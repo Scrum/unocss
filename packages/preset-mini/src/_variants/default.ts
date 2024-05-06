@@ -5,14 +5,14 @@ import { variantBreakpoints } from './breakpoints'
 import { variantCombinators } from './combinators'
 import { variantColorsMediaOrClass } from './dark'
 import { variantLanguageDirections } from './directions'
-import { variantCssLayer, variantInternalLayer, variantScope, variantSelector, variantVariables } from './misc'
+import { variantCssLayer, variantInternalLayer, variantScope, variantSelector, variantTheme, variantVariables } from './misc'
 import { variantNegative } from './negative'
 import { variantImportant } from './important'
 import { variantCustomMedia, variantPrint } from './media'
 import { variantSupports } from './supports'
 import { variantPartClasses, variantPseudoClassFunctions, variantPseudoClassesAndElements, variantTaggedPseudoClasses } from './pseudo'
 import { variantAria } from './aria'
-import { variantDataAttribute, variantGroupDataAttribute } from './data'
+import { variantDataAttribute, variantTaggedDataAttributes } from './data'
 import { variantContainerQuery } from './container'
 
 export function variants(options: PresetMiniOptions): Variant<Theme>[] {
@@ -42,6 +42,8 @@ export function variants(options: PresetMiniOptions): Variant<Theme>[] {
 
     variantContainerQuery,
     variantVariables,
-    variantGroupDataAttribute,
+    ...variantTaggedDataAttributes,
+
+    variantTheme,
   ]
 }

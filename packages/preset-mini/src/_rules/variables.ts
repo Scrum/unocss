@@ -1,5 +1,5 @@
 import type { Rule } from '@unocss/core'
-import { h, hasThemeFn, transformThemeFn } from '../utils'
+import { h } from '../utils'
 
 const variablesAbbrMap: Record<string, string> = {
   backface: 'backface-visibility',
@@ -26,21 +26,15 @@ export const cssVariables: Rule[] = [
 ]
 
 export const cssProperty: Rule[] = [
-  [/^\[(.*)\]$/, ([_, body], { theme }) => {
+  [/^\[(.*)\]$/, ([_, body]) => {
     if (!body.includes(':'))
       return
 
     const [prop, ...rest] = body.split(':')
     const value = rest.join(':')
 
-    if (!isURI(body) && prop.match(/^[a-z-]+$/) && isValidCSSBody(value)) {
-      let parsed
-
-      if (hasThemeFn(value))
-        parsed = transformThemeFn(value, theme)
-
-      if (!parsed || parsed === value)
-        parsed = h.bracket(`[${value}]`)
+    if (!isURI(body) && /^[a-z-]+$/.test(prop) && isValidCSSBody(value)) {
+      const parsed = h.bracket(`[${value}]`)
 
       if (parsed)
         return { [prop]: parsed }

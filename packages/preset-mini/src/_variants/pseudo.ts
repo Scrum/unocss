@@ -48,6 +48,7 @@ const PseudoClasses: Record<string, string> = Object.fromEntries([
   'active',
   'enabled',
   'disabled',
+  'popover-open',
 
   // tree-structural
   'root',
@@ -69,7 +70,7 @@ const PseudoClasses: Record<string, string> = Object.fromEntries([
   ['before', '::before'],
   ['after', '::after'],
   ['selection', '::selection'],
-  ['marker', '::marker'],
+  ['marker', ' ::marker'],
   ['file', '::file-selector-button'],
 ].map(key => Array.isArray(key) ? key : [key, `:${key}`]))
 

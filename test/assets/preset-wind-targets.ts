@@ -385,6 +385,8 @@ export const presetWindTargets: string[] = [
   '!animate-ping',
   '-backdrop-hue-rotate-90',
   '-hue-rotate-90',
+  '-hue-rotate--90',
+  '-hue-rotate-[var(--for-hue,0.5turn)]',
   'hover:animate-bounce',
 
   '-scroll-mb-px',
@@ -407,6 +409,17 @@ export const presetWindTargets: string[] = [
   // view-transition
   'view-transition-foo',
   'view-transition-none',
+
+  // dynamic viewport height
+  'h-svh',
+  'h-dvh',
+  'h-lvh',
+  'min-h-dvh',
+  'min-h-lvh',
+  'min-h-svh',
+  'max-h-dvh',
+  'max-h-svh',
+  'max-h-lvh',
 ]
 
 export const presetWindNonTargets: string[] = [

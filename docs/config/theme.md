@@ -1,12 +1,12 @@
 ---
 title: Theme
-description: UnoCSS also supports the theming system that you might be familiar with in Tailwind / Windi.
+description: UnoCSS also supports the theming system that you might be familiar with in Tailwind CSS / Windi CSS.
 outline: deep
 ---
 
 # Theme
 
-UnoCSS also supports the theming system that you might be familiar with in Tailwind / Windi. At the user level, you can specify the `theme` property in your config, and it will be deep merged to the default theme.
+UnoCSS also supports the theming system that you might be familiar with in Tailwind CSS / Windi CSS. At the user level, you can specify the `theme` property in your config, and it will be deep-merged to the default theme.
 
 ## Usage
 
@@ -18,13 +18,13 @@ theme: {
   colors: {
     'veryCool': '#0000ff', // class="text-very-cool"
     'brand': {
-      'primary': 'hsl(var(--hue 217) 78% / 51%)', //class="bg-brand-primary"
-    }
+      'primary': 'hsl(var(--hue, 217) 78% 51%)', //class="bg-brand-primary"
+    },
   },
 }
 ```
 ::: tip
-During the parsing process, `theme` will always exist in `context`, you can deconstruct and use it.
+During the parsing process, `theme` will always exist in `context`.
 :::
 
 ### Usage in `rules`
@@ -50,8 +50,8 @@ variants: [
     name: 'variant-name',
     match(matcher, { theme }) {
       // ...
-    }
-  }
+    },
+  },
 ]
 ```
 
@@ -64,14 +64,14 @@ shortcuts: [
   [/^badge-(.*)$/, ([, c], { theme }) => {
     if (Object.keys(theme.colors).includes(c))
       return `bg-${c}4:10 text-${c}5 rounded`
-  }]
+  }],
 ]
 ```
 
 ## Breakpoints
 
 ::: warning
-One exception is that UnoCSS gives full control of `breakpoints` to users. When a custom `breakpoints` is provided, the default will be overridden instead of merging.
+When a custom `breakpoints` object is provided the default will be overridden instead of merging.
 :::
 
 With the following example, you will be able to only use the `sm:` and `md:` breakpoint variants:
@@ -85,7 +85,7 @@ theme: {
     sm: '320px',
     md: '640px',
   },
-},
+}
 ```
 
 ::: info
@@ -106,6 +106,5 @@ theme: {
     md: `${40 * 16}px`,
     lg: '960px',
   },
-},
+}
 ```
-

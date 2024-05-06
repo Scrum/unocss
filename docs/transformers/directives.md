@@ -22,7 +22,6 @@ UnoCSS transformer for `@apply`, `@screen` and `theme()` directives: `@unocss/tr
   ```
 :::
 
-
 ```ts
 // uno.config.ts
 import { defineConfig } from 'unocss'
@@ -59,19 +58,11 @@ Will be transformed to:
 
 #### `--at-apply`
 
-To be compatible with vanilla CSS, you can use CSS Variables to replace the `@apply` directive:
+To be compatible with vanilla CSS, you can use CSS custom properties to replace the `@apply` directive:
 
 ```css
 .custom-div {
   --at-apply: text-center my-0 font-medium;
-}
-```
-
-To use rules with `:`, you will have to quote the value:
-
-```css
-.custom-div {
-  --at-apply: "hover:text-red";
 }
 ```
 
@@ -85,6 +76,20 @@ transformerDirectives({
   // applyVariable: false
 })
 ```
+
+#### Adding quotes
+
+To use rules with `:`, you will have to quote the whole value:
+
+```css
+.custom-div {
+  --at-apply: "hover:text-red hover:font-bold";
+  /* or */
+  @apply 'hover:text-red hover:font-bold';
+}
+```
+
+Using quotes after `@apply` is optional, to meet the behavior of some formatters.
 
 ### `@screen`
 

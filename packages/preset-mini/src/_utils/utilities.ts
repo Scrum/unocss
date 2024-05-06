@@ -3,8 +3,8 @@ import { toArray } from '@unocss/core'
 import { colorOpacityToString, colorToString, getStringComponent, getStringComponents, parseCssColor } from '@unocss/rule-utils'
 import type { Theme } from '../theme'
 import { h } from './handlers'
-import { cssMathFnRE, directionMap, globalKeywords } from './mappings'
-import { bracketTypeRe, numberWithUnitRE } from './handlers/regex'
+import { cssMathFnRE, directionMap, globalKeywords, xyzArray, xyzMap } from './mappings'
+import { bracketTypeRe, numberWithUnitRE, splitComma } from './handlers/regex'
 
 export const CONTROL_MINI_NO_NEGATIVE = '$$mini-no-negative'
 
@@ -17,8 +17,16 @@ export const CONTROL_MINI_NO_NEGATIVE = '$$mini-no-negative'
 export function directionSize(propertyPrefix: string): DynamicMatcher {
   return ([_, direction, size]: string[], { theme }: RuleContext<Theme>): CSSEntries | undefined => {
     const v = theme.spacing?.[size || 'DEFAULT'] ?? h.bracket.cssvar.global.auto.fraction.rem(size)
-    if (v != null)
+
+    if (v != null) {
       return directionMap[direction].map(i => [`${propertyPrefix}${i}`, v])
+    }
+    else if (size.startsWith('-')) {
+      // --custom-spacing-value
+      const v = theme.spacing?.[size.slice(1)]
+      if (v != null)
+        return directionMap[direction].map(i => [`${propertyPrefix}${i}`, `calc(${v} * -1)`])
+    }
   }
 }
 
@@ -102,9 +110,9 @@ export function parseColor(body: string, theme: Theme, key?: ThemeColorKeys): Pa
   if (h.numberWithUnit(bracketOrMain))
     return
 
-  if (bracketOrMain.match(/^#[\da-fA-F]+/g))
+  if (/^#[\da-fA-F]+$/.test(bracketOrMain))
     color = bracketOrMain
-  else if (bracketOrMain.match(/^hex-[\da-fA-F]+/g))
+  else if (/^hex-[\da-fA-F]+$/.test(bracketOrMain))
     color = `#${bracketOrMain.slice(4)}`
   else if (main.startsWith('$'))
     color = h.cssvar(main)
@@ -121,7 +129,7 @@ export function parseColor(body: string, theme: Theme, key?: ThemeColorKeys): Pa
   if (!color) {
     let colorData
     const [scale] = colors.slice(-1)
-    if (scale.match(/^\d+$/)) {
+    if (/^\d+$/.test(scale)) {
       no = scale
       colorData = getThemeColor(theme, colors.slice(0, -1), key)
       if (!colorData || typeof colorData === 'string')
@@ -175,6 +183,7 @@ export function parseColor(body: string, theme: Theme, key?: ThemeColorKeys): Pa
  *
  * @param property - Property for the css value to be created.
  * @param varName - Base name for the opacity variable.
+ * @param [key] - Theme key to select the color from.
  * @param [shouldPass] - Function to decide whether to pass the css.
  * @return object.
  */
@@ -193,12 +202,24 @@ export function colorResolver(property: string, varName: string, key?: ThemeColo
         css[property] = colorToString(cssColor, alpha)
       }
       else {
-        css[`--un-${varName}-opacity`] = colorOpacityToString(cssColor)
-        css[property] = colorToString(cssColor, `var(--un-${varName}-opacity)`)
+        const opacityVar = `--un-${varName}-opacity`
+        const result = colorToString(cssColor, `var(${opacityVar})`)
+        if (result.includes(opacityVar))
+          css[opacityVar] = colorOpacityToString(cssColor)
+        css[property] = result
       }
     }
     else if (color) {
-      css[property] = colorToString(color, alpha)
+      if (alpha != null) {
+        css[property] = colorToString(color, alpha)
+      }
+      else {
+        const opacityVar = `--un-${varName}-opacity`
+        const result = colorToString(color, `var(${opacityVar})`)
+        if (result.includes(opacityVar))
+          css[opacityVar] = 1
+        css[property] = result
+      }
     }
 
     if (shouldPass?.(css) !== false)
@@ -215,17 +236,26 @@ export function colorableShadows(shadows: string | string[], colorVar: string) {
     if (!components || components.length < 3)
       return shadows
 
-    if (parseCssColor(components.at(0)))
-      return shadows
+    let isInset = false
+    const pos = components.indexOf('inset')
+    if (pos !== -1) {
+      components.splice(pos, 1)
+      isInset = true
+    }
 
     let colorVarValue = ''
-    if (parseCssColor(components.at(-1))) {
+    if (parseCssColor(components.at(0))) {
+      const color = parseCssColor(components.shift())
+      if (color)
+        colorVarValue = `, ${colorToString(color)}`
+    }
+    else if (parseCssColor(components.at(-1))) {
       const color = parseCssColor(components.pop())
       if (color)
         colorVarValue = `, ${colorToString(color)}`
     }
 
-    colored.push(`${components.join(' ')} var(${colorVar}${colorVarValue})`)
+    colored.push(`${isInset ? 'inset ' : ''}${components.join(' ')} var(${colorVar}${colorVarValue})`)
   }
 
   return colored
@@ -258,12 +288,20 @@ export function makeGlobalStaticRules(prefix: string, property?: string): Static
   return globalKeywords.map(keyword => [`${prefix}-${keyword}`, { [property ?? prefix]: keyword }])
 }
 
-export function isCSSMathFn(value: string) {
-  return cssMathFnRE.test(value)
+export function isCSSMathFn(value: string | undefined) {
+  return value != null && cssMathFnRE.test(value)
 }
 
 export function isSize(str: string) {
   if (str[0] === '[' && str.slice(-1) === ']')
     str = str.slice(1, -1)
   return cssMathFnRE.test(str) || numberWithUnitRE.test(str)
+}
+
+export function transformXYZ(d: string, v: string, name: string): [string, string][] {
+  const values: string[] = v.split(splitComma)
+  if (d || (!d && values.length === 1))
+    return xyzMap[d].map((i): [string, string] => [`--un-${name}${i}`, v])
+
+  return values.map((v, i) => [`--un-${name}-${xyzArray[i]}`, v])
 }
